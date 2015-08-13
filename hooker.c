@@ -50,7 +50,10 @@ BOOL hook(Class cls, SEL sel, IMP imp, IMP *orig)
     if(class_has_method) {
         method_setImplementation(method, imp);
     } else {
-        *orig = (IMP)get_function(retsizes(method), sizes(method) - 16);
+        int ret = retsizes(method);
+        int arg = sizes(method) - 16;
+
+        *orig = (IMP)get_function(ret, arg);
 
         const char *type = method_getTypeEncoding(method);
         return class_addMethod(cls, sel, imp, type);
@@ -61,8 +64,9 @@ BOOL hook(Class cls, SEL sel, IMP imp, IMP *orig)
 
 int retsizes(Method m)
 {
-    const char *type = method_getTypeEncoding(m);
-    return objc_sizeof_type(type);
+    char rettype[BUFSIZ];
+    method_getReturnType(m, rettype, sizeof(rettype));
+    return objc_sizeof_type(rettype);
 }
 
 int sizes(Method m)

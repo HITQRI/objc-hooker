@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <objc/runtime.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -21,8 +22,8 @@ ROUND(size_t v, size_t a)
     }
 }
 
-
 enum {
+/*
    _C_ID='@',
    _C_CHR='c',
    _C_UCHR='C',
@@ -52,6 +53,7 @@ enum {
    _C_UNION_E=')',
    _C_PTR='^',
    _C_CONST='r',
+*/
    _C_IN='n',
    _C_INOUT='N',
    _C_OUT='o',
@@ -390,9 +392,9 @@ objc_sizeof_type (const char *type)
     size_t itemSize;
     switch (*type) {
         case _C_VOID:    return 1; // More convenient than the correct value.
-        case _C_ID:      return 4;
-        case _C_CLASS:   return 4;
-        case _C_SEL:     return 4;
+        case _C_ID:      return sizeof(id);
+        case _C_CLASS:   return sizeof(Class);
+        case _C_SEL:     return sizeof(SEL);
         case _C_CHR:     return sizeof(char);
         case _C_UCHR:    return sizeof(unsigned char);
         case _C_SHT:     return sizeof(short);

@@ -6,6 +6,9 @@ DEF_FILE="definitions.o.c"
 all: infinite_functions.o hooker.o objc_sizeof_type.o main.o
 	clang $^ -framework Foundation
 
+clean:
+	rm -f infinite_functions.o hooker.o objc_sizeof_type.o main.o $(DEF_FILE) gcode.out a.out
+
 main.o: main.m
 	clang -c $<
 
