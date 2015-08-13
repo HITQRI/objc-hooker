@@ -1,4 +1,4 @@
-so the issue with maintaining substrate is that it's fairly platform specific.
+so the issue with maintaining substrate's obj-c part is that it's fairly platform specific.
 
 the reason why it's platform specific is because of this:
 
