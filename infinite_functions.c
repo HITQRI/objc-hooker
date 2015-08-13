@@ -1,8 +1,6 @@
 // not sure if this is good practice,
 // but the issue with substrate is that
 // you need to dynamially allocate arguments for a function, so what im doing instead is generating a bunch of function type signatures. 
-// since it's apple we're talking about, most functions will
-// not have more than the equivalent of 8 ints as the return value, or 8 ints as the number of arguments.
 
 #include <stdio.h>
 #include <objc/runtime.h>
@@ -13,17 +11,13 @@
 
 #define GET_STRUCT(X) PREFIX##X
 
-void find_method(Class cls, SEL _cmd, Method * m)
-{
-
-}
+#include "hooker.h"
 
 IMP get_implementation_super(id self, SEL _cmd)
 {
     Class super = class_getSuperclass(object_getClass(self));
     Method m;
     find_method(super, _cmd, &m);
-    return NULL;
     return method_getImplementation(m);
 }
 
