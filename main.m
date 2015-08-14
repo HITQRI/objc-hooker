@@ -9,7 +9,7 @@
 @implementation Super
 -(NSString *)function:(char)c int:(int)x char:(char)d int:(int)i
 {
-    printf("[super %corig] %d %c %c %di\n", 37, x, c, d, i);
+    printf("[super %corig] %d %c %c %d\n", 37, x, c, d, i);
 
     return @"(return [Super \%orig]";
 }
