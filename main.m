@@ -11,7 +11,7 @@
 {
     printf("[super %corig] %d %c %c %d\n", 37, x, c, d, i);
 
-    return @"(return [super \%orig]";
+    return @"(return [super \%orig])";
 }
 @end
 
