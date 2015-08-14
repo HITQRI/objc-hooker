@@ -1,3 +1,5 @@
+## The Problem:
+
 so the issue with maintaining substrate's obj-c part is that it's fairly platform specific.
 
 the reason why it's platform specific is because of this:
@@ -15,11 +17,15 @@ say you hook the subclasses func, then the superclasses.
 
 what will happen is when you call %orig on the subclasses func, you'll get not the hooked superclasses function, but the original one. bad.
 
+## General solution:
+
 what people usually do to fix this is with some assembly voodoo.
 
-but i found a "portable" way of doing it....
+## My solution:
 
-instead, i set the original to this:
+but i found a "portable" way of doing it.... "portable" as in, it depends on undefined behavior. but iOS frameworks use clang, so whatevs.
+
+so basically, i set the original to this:
 
 ```objc
 NSString *orig(id self, SEL _cmd)
