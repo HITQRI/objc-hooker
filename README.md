@@ -68,4 +68,4 @@ if you're trying to hook a function with more than a kilobit worth of arguments.
 
 ______
 
-the only non-portable thing in here is objc_sizeof_type.c, which i took from WinObjC... so microsoft will take care of that for us.
+the only non-portable thing in here is ```objc_sizeof_type.c```, which i took from [WinObjC](https://github.com/microsoft/WinObjC)... so microsoft will take care of that for us.
