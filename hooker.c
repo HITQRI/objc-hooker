@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+typedef void * word;
+
 int sizes(Method);
 int retsizes(Method);
 
@@ -50,12 +52,13 @@ BOOL hook(Class cls, SEL sel, IMP imp, IMP *orig)
     if(class_has_method) {
         method_setImplementation(method, imp);
     } else {
-        int ret = retsizes(method);
-        int arg = sizes(method) - 16;
+        int ret = (retsizes(method) + sizeof(word) - 1)/sizeof(word);
+        int arg = sizes(method)/sizeof(word);
 
-        *orig = (IMP)get_function(ret, arg);
+        *orig = (IMP)get_function(ret, arg*8);
 
         const char *type = method_getTypeEncoding(method);
+        printf("type: %s ret: %d arg: %d\n", type, ret, arg);
         return class_addMethod(cls, sel, imp, type);
     }
 

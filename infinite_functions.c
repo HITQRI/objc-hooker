@@ -6,6 +6,7 @@
 #include <objc/runtime.h>
 
 #define BYTE char
+typedef void * word;
 
 //#define PREFIX __substrate_test_
 
@@ -13,18 +14,24 @@
 
 #include "hooker.h"
 
+typedef struct meth_t {
+    id self;
+    SEL _cmd;
+} meth_t;
+
 IMP get_implementation_super(id self, SEL _cmd)
 {
+    printf("getting super for <%p>...\n", self);
     Class super = class_getSuperclass(object_getClass(self));
     Method m;
     find_method(super, _cmd, &m);
     return method_getImplementation(m);
 }
 
-#define INITIAL_STRUCT() typedef BYTE GET_STRUCT(i)
+#define INITIAL_STRUCT() typedef word GET_STRUCT(i)
 #define MAKE_STRUCT(X) typedef struct PREFIX##X##i {\
     GET_STRUCT(X) previous;\
-    BYTE lol;\
+    word lol;\
 } PREFIX##X##i
 
 #define GET_VOID_FUNC_VOID() void##PREFIX##void
@@ -39,11 +46,12 @@ IMP get_implementation_super(id self, SEL _cmd)
     tmp_t(self, _cmd);\
     \
 }
-#define MAKE_VOID_FUNC(ARG) static void GET_VOID_FUNC(ARG)(id self, SEL _cmd, GET_STRUCT(ARG) args){\
-    IMP i = get_implementation_super(self, _cmd);\
-    void (*tmp_t)(id, SEL, GET_STRUCT(ARG));\
-    tmp_t = (void (*)(id, SEL, GET_STRUCT(ARG)))i;\
-    tmp_t(self, _cmd, args);\
+#define MAKE_VOID_FUNC(ARG) static void GET_VOID_FUNC(ARG)(GET_STRUCT(ARG) args){\
+    meth_t *meth = (meth_t *)&args;\
+    IMP i = get_implementation_super(meth->self, meth->_cmd);\
+    void (*tmp_t)(GET_STRUCT(ARG));\
+    tmp_t = (void (*)(GET_STRUCT(ARG)))i;\
+    tmp_t(args);\
 }
 #define MAKE_FUNC_VOID(RET) static GET_STRUCT(RET) GET_FUNC_VOID(RET)(id self, SEL _cmd){\
     IMP i = get_implementation_super(self, _cmd);\
@@ -51,11 +59,19 @@ IMP get_implementation_super(id self, SEL _cmd)
     tmp_t = (GET_STRUCT(RET) (*)(id, SEL))i;\
     return tmp_t(self, _cmd);\
 }
-#define MAKE_FUNC(RET, ARG) static GET_STRUCT(RET) GET_FUNC(RET, ARG)(id self, SEL _cmd, GET_STRUCT(ARG) args){\
-    IMP i = get_implementation_super(self, _cmd);\
-    GET_STRUCT(RET) (*tmp_t)(id, SEL, GET_STRUCT(ARG));\
-    tmp_t = (GET_STRUCT(RET) (*)(id, SEL, GET_STRUCT(ARG)))i;\
-    return tmp_t(self, _cmd, args);\
+#define MAKE_FUNC(RET, ARG) static GET_STRUCT(RET) GET_FUNC(RET, ARG)(GET_STRUCT(ARG) args){\
+    IMP (*func)(GET_STRUCT(ARG));\
+    func = (IMP (*)(GET_STRUCT(ARG)))get_implementation_super;\
+    IMP i = func(args);\
+    GET_STRUCT(RET) (*tmp_t)(GET_STRUCT(ARG));\
+    tmp_t = (GET_STRUCT(RET) (*)(GET_STRUCT(ARG)))i;\
+    char *x = (char *)&args;\
+    for(int i = 0; i < sizeof(args); i++) {\
+        printf("%.2x", x[i]);\
+    }\
+    printf(" (%lu)\n", sizeof(args));\
+    return tmp_t(args);\
 }
+
 
 #include "definitions.o.c"

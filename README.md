@@ -34,9 +34,26 @@ NSString *orig(id self, SEL _cmd)
 ```
 
 
-now you may be thinking... what about functions with other type signatures?
+what about functions with other type signatures?
 
-well.... i generated a metric fuckton of single possible c function type signatures. the only way this wouldn't work is if you're trying to hook a function with a kilobit worth of arguments. if for some crazy reason you want more leniency then change ```NUM_BYTES=``` at the top of the makefile (warning: build time will be longer)
+well.... i generated a lot of single possible c function type signatures... like this:
+
+```objc
+typedef void * word;
+
+void with_2args(word a, word b)
+{
+    //...
+}
+
+void with_3args(word a, word b, word c)
+{
+    //...
+}
+```
+
+
+the only way this wouldn't work is if you're trying to hook a function with a kilobit worth of arguments. you change ```NUM_BYTES=``` at the top of the makefile (warning: build time will exponentially grow)
 
 ______
 
