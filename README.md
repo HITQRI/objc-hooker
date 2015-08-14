@@ -62,6 +62,7 @@ the only way this wouldn't work:
 
 * You have over a kilobit worth of arguments (not happening in Apple frameworks)
 * You are hooking a function that passes a packed struct as an argument (not very likely)
+* You are not using clang
 
 if you're trying to hook a function with more than a kilobit worth of arguments. you change ```NUM_BYTES=``` at the top of the makefile (warning: build time will exponentially grow)
 
