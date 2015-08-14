@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 #include <objc/runtime.h>
+#include "macros.h"
 
-#define BYTE char
 typedef void * word;
 
 //#define PREFIX __substrate_test_
@@ -14,14 +14,9 @@ typedef void * word;
 
 #include "hooker.h"
 
-typedef struct meth_t {
-    id self;
-    SEL _cmd;
-} meth_t;
-
 IMP get_implementation_super(id self, SEL _cmd)
 {
-    printf("getting super for <%p>...\n", self);
+    debugf("getting super for <%p>...\n", self);
     Class super = class_getSuperclass(object_getClass(self));
     Method m;
     find_method(super, _cmd, &m);
@@ -38,40 +33,5 @@ IMP get_implementation_super(id self, SEL _cmd)
 #define GET_VOID_FUNC(ARG) void##PREFIX##ARG
 #define GET_FUNC_VOID(RET) RET##PREFIX##void
 #define GET_FUNC(RET, ARG) RET##PREFIX##ARG
-
-#define MAKE_VOID_FUNC_VOID() static void GET_VOID_FUNC_VOID()(id self, SEL _cmd){\
-    IMP i = get_implementation_super(self, _cmd);\
-    void (*tmp_t)(id, SEL);\
-    tmp_t = (void (*)(id, SEL))i;\
-    tmp_t(self, _cmd);\
-    \
-}
-#define MAKE_VOID_FUNC(ARG) static void GET_VOID_FUNC(ARG)(GET_STRUCT(ARG) args){\
-    meth_t *meth = (meth_t *)&args;\
-    IMP i = get_implementation_super(meth->self, meth->_cmd);\
-    void (*tmp_t)(GET_STRUCT(ARG));\
-    tmp_t = (void (*)(GET_STRUCT(ARG)))i;\
-    tmp_t(args);\
-}
-#define MAKE_FUNC_VOID(RET) static GET_STRUCT(RET) GET_FUNC_VOID(RET)(id self, SEL _cmd){\
-    IMP i = get_implementation_super(self, _cmd);\
-    GET_STRUCT(RET) (*tmp_t)(id, SEL);\
-    tmp_t = (GET_STRUCT(RET) (*)(id, SEL))i;\
-    return tmp_t(self, _cmd);\
-}
-#define MAKE_FUNC(RET, ARG) static GET_STRUCT(RET) GET_FUNC(RET, ARG)(GET_STRUCT(ARG) args){\
-    IMP (*func)(GET_STRUCT(ARG));\
-    func = (IMP (*)(GET_STRUCT(ARG)))get_implementation_super;\
-    IMP i = func(args);\
-    GET_STRUCT(RET) (*tmp_t)(GET_STRUCT(ARG));\
-    tmp_t = (GET_STRUCT(RET) (*)(GET_STRUCT(ARG)))i;\
-    char *x = (char *)&args;\
-    for(int i = 0; i < sizeof(args); i++) {\
-        printf("%.2x", x[i]);\
-    }\
-    printf(" (%lu)\n", sizeof(args));\
-    return tmp_t(args);\
-}
-
 
 #include "definitions.o.c"

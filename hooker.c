@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "macros.h"
+
 typedef void * word;
 
 int sizes(Method);
@@ -47,18 +49,20 @@ BOOL hook(Class cls, SEL sel, IMP imp, IMP *orig)
         *orig = method_getImplementation(method);
     }
 
-    printf("-[%s %s]: %s\n", class_getName(cls), sel_getName(sel), class_has_method ? "HAS method, hooking" :  "DOES NOT have method, adding");
+    bluec("-[%s %s]: ", class_getName(cls), sel_getName(sel));
+    greenc("%s\n", class_has_method ? "HAS method, hooking" :  "DOES NOT have method, adding");
+    normalc();
 
     if(class_has_method) {
         method_setImplementation(method, imp);
     } else {
         int ret = (retsizes(method) + sizeof(word) - 1)/sizeof(word);
-        int arg = sizes(method)/sizeof(word);
+        int arg = (sizes(method) + sizeof(word) - 1)/sizeof(word);
 
-        *orig = (IMP)get_function(ret, arg*8);
+        *orig = (IMP)get_function(ret, arg);
 
         const char *type = method_getTypeEncoding(method);
-        printf("type: %s ret: %d arg: %d\n", type, ret, arg);
+        debugf("type: %s ret: %d arg: %d\n", type, ret, arg);
         return class_addMethod(cls, sel, imp, type);
     }
 
@@ -74,20 +78,17 @@ int retsizes(Method m)
 
 int sizes(Method m)
 {
-    const char *type = method_getTypeEncoding(m);
+    int biggestTypeSize = 0;
+    int numArguments = method_getNumberOfArguments(m);
+    for(int i = 0; i < numArguments; i++) {
+        char type[BUFSIZ];
+        method_getArgumentType(m, i, type, sizeof(type));
 
-    char rettype[BUFSIZ];
-    method_getReturnType(m, rettype, sizeof(rettype));
-
-    int arg = 0;
-
-    for(int i = strlen(rettype); i < strlen(type); i++)
-    {
-        char c = type[i];
-        if(c < '0' || c > '9') break;
-        arg *= 10;
-        arg += c - '0';
+        int typeSize = objc_sizeof_type(type);
+        if(typeSize > biggestTypeSize) {
+            biggestTypeSize = typeSize;
+        }
     }
 
-    return arg;
+    return biggestTypeSize*numArguments;
 }

@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
-#define ERROR(...) fprintf(stderr, ## __VA_ARGS__)
+#define ERROR(...) do {                 \
+    fprintf(stderr, ## __VA_ARGS__);    \
+    exit(1);                            \
+} while (0)
 
 
 #define INCLUDE_TYPE 1
@@ -68,27 +72,22 @@ void print_func_body(const char *ret, size_t arg)
 
 int main(int argc, char *argv[])
 {
-    if(argc != 2) {
+    if(argc != 2)
         ERROR("%s numwords\n", argv[0]);
-        return 1;
-    }
 
     int numwords = 0;
 
     for(int i = 0; i < strlen(argv[1]); i++) {
         char c = argv[1][i];
-        if(c < '0' || c > '9') {
+        if(c < '0' || c > '9')
             ERROR("%s numwords\n", argv[0]);
-            return 1;
-        }
 
         numwords *= 10;
         numwords += c - '0';
     }
 
-    if(numwords < 1) {
+    if(numwords < 1)
         ERROR("numwords must be bigger than 0\n");
-    }
 
     printf(
 "//create the structs\n"
