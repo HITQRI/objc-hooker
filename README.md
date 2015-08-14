@@ -52,8 +52,12 @@ void with_3args(word a, word b, word c)
 }
 ```
 
+the only way this wouldn't work:
 
-the only way this wouldn't work is if you're trying to hook a function with a kilobit worth of arguments. you change ```NUM_BYTES=``` at the top of the makefile (warning: build time will exponentially grow)
+* You have over a kilobit worth of arguments (not happening in Apple frameworks)
+* You are hooking a function that passes a packed struct as an argument (not very likely)
+
+if you're trying to hook a function with more than a kilobit worth of arguments. you change ```NUM_BYTES=``` at the top of the makefile (warning: build time will exponentially grow)
 
 ______
 
