@@ -9,7 +9,9 @@
 @implementation Super
 -(NSString *)function:(char)c int:(int)x char:(char)d int:(int)i
 {
-    return [NSString stringWithFormat:@"orig super %d %c %c %d", x, c, d, i];
+    printf("[super %corig] %d %c %c %di\n", 37, x, c, d, i);
+
+    return @"(return [Super \%orig]";
 }
 @end
 
@@ -25,17 +27,20 @@
 
 @implementation Layer
 @end
+typedef NSString * (*imp_t)(id, SEL, char, int, char, int);
 
+imp_t orig_super;
 NSString *hook_super(Super *self, SEL _cmd, char c, int x, char d, int i)
 {
-    return [NSString stringWithFormat:@"hook super %d %c %c %d", x, c, d, i];
+    printf("[super %chook] %d %c %c %d\n", 37, x, c, d, i);
+    return [NSString stringWithFormat:@"(return [super %chook] %@)", 37, orig_super(self, _cmd, c, x, d, i)];
 }
 
-typedef NSString * (*imp_t)(id, SEL, char, int, char, int);
 imp_t orig_bar;
 NSString *hook_bar(Sub *self, SEL _cmd, char c, int x, char d, int i)
 {
-    return [NSString stringWithFormat:@"%@ '%@'", @"hook bar, super is", orig_bar(self, _cmd, c, x, d, i)];
+    printf("[sub %chook] %d %c %c %d\n", 37, x, c, d, i);
+    return [NSString stringWithFormat:@"(return [sub %chook] %@)", 37, orig_bar(self, _cmd, c, x, d, i)];
 }
 
 typedef void (*ca_imp_t)(id, SEL, CGPoint);
@@ -44,13 +49,13 @@ ca_imp_t orig_calayer;
 
 void hook_layer(id self, SEL _cmd, CGPoint pos)
 {
-    purplec("hook layer\n");
+    purplec("hook layer (%f, %f)\n", pos.x, pos.y);
     return orig_layer(self, _cmd, pos);
 }
 
 void hook_calayer(id self, SEL _cmd, CGPoint pos)
 {
-    purplec("hook calayer\n");
+    purplec("hook calayer (%f, %f)\n", pos.x, pos.y);
     return orig_calayer(self, _cmd, pos);
 }
 
@@ -66,7 +71,7 @@ void test_step(Class cls, void (*t)(Class))
 
 void test(Class sub, Class super, SEL _cmd, IMP hook_sub, IMP *orig_sub, IMP hook_super, IMP *orig_super, void (*t)(Class))
 {
-    yellowc("Testing. ");
+    yellowc("-----------------------------------------\n");
     bluec("%s", class_getName(sub));
     yellowc(" is a subclass of ");
     bluec("%s", class_getName(super));
@@ -100,7 +105,7 @@ int main(int argc, char *argv[])
     test(   Sub.class, Super.class,
             @selector(function:int:char:int:),
             (IMP)hook_bar, (IMP *)&orig_bar,
-            (IMP)hook_super, NULL,
+            (IMP)hook_super, (IMP *)&orig_super,
             test_sub_super
         );
 
@@ -110,6 +115,8 @@ int main(int argc, char *argv[])
             (IMP)hook_calayer, (IMP *)&orig_calayer,
             test_layer
         );
+
+    yellowc("-----------------------------------------\n");
 
     return 0;
 }
