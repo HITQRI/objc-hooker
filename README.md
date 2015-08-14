@@ -23,6 +23,10 @@ what people usually do to fix this is with some assembly voodoo.
 
 ## My solution:
 
+**works on**: armv7, arm64, x86_64
+
+**doesn't work on**:: idk, everything i tested it on works
+
 but i found a "portable" way of doing it.... "portable" as in, it depends on undefined behavior. but iOS frameworks use clang, so whatevs.
 
 so basically, i set the original to this:
